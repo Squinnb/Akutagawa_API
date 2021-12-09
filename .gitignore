@@ -1,0 +1,12 @@
+# DB
+db.sqlite3
+base/migrations/
+base/api/__pycache__/
+base/migrations/
+.DS_Store
+
+# env variables
+backend/settings.py
+backend/.env
+
+
