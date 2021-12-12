@@ -41,11 +41,10 @@ def getBooks(request):
 
 
 @api_view(['GET'])
-def getReviews(request, book_id):
+def getReview(request, book_id):
     reviews = Review.objects.filter(book=book_id)
-    is_many = reviews.count() > 1
-    print("IS MANY: ", is_many)
-    serializer = ReviewSerializer(reviews, many=is_many)
+    # many kw just wants to know if it's a query set or not, it can be a set of one or no results... 
+    serializer = ReviewSerializer(reviews, many=True)
     return Response(serializer.data)
 
 
