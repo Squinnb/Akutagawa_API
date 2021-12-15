@@ -16,3 +16,9 @@ class ReviewSerializer(ModelSerializer):
         model = Review
         fields = '__all__'
     user = StringRelatedField(many=False)
+    
+    # def create(self, validated_data):
+    #     return Review.objects.create(**validated_data)
+
+    # def update(self, instance, validated_data):
+    #     return instance
