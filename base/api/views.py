@@ -67,7 +67,7 @@ def review_list(request, book_id):
         return Response(serializer.data)
 
 # CRUD for a user's review  
-@api_view(['GET', 'PUT', 'POST', 'DELETE'])
+@api_view(['PUT', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def review(request, book_id):
     print("req data:::   ", request.data)
@@ -75,33 +75,29 @@ def review(request, book_id):
     if request.method == 'POST':
         serial = ReviewSerializer(data=request.data)
         if serial.is_valid():
-            serial.save(user=request.user)
-            return Response(serial.data, status=status.HTTP_201_CREATED)
-    
+            try:
+                serial.save(user=request.user)
+                return Response(serial.data, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                return Response(data={"message": "You have already reviewed this title. You may update your review, or delete it and make a new one."} ,status=status.HTTP_409_CONFLICT)
     try:
-        review = Review.objects.filter(book=book_id, user=request.user.id)
-        print("TYPE OF objects.get(): ", type(review))
+        review = Review.objects.get(book=book_id, user=request.user.id)
         serial = ReviewSerializer(review, many=False)
-        print("TYPE OF ReviewSerializer(): ", type(serial))
     except ObjectDoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-    # GET ### I have no real use case for getting a single review but for reference I am leaving this here
-    if request.method == 'GET':
-        serial = ReviewSerializer(review, many=False)
-        return Response(serial)
-
+ 
     # PUT
-    elif request.method == 'PUT':
-        serial = ReviewSerializer(instance=review)
+    if request.method == 'PUT':
+        serial = ReviewSerializer(review, data=request.data)
         if serial.is_valid():
             serial.save()
-            return Response(serial.data, status=status.HTTP_201_CREATED)
+            return Response(serial.data, status=status.HTTP_200_OK)
+        return Response(serial.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # DELETE
     elif request.method == 'DELETE':
         review.delete()
-        return Response("Review succesfully deleted")
+        return Response("Review succesfully deleted", status=status.HTTP_204_NO_CONTENT)
 
 # ~~~R ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
